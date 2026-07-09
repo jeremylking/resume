@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Sets the theme before first paint to avoid a flash of the wrong theme.
+     Intentionally inline (must run before CSS/paint, so it cannot be an
+     external deferred script) and duplicated byte-for-byte on every page —
+     keep all 6 copies identical if you ever touch this. -->
+<script>
+  (function () {
+    var pref = localStorage.getItem('theme-preference') || 'auto';
+    var theme = pref === 'auto'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : pref;
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeremy L King — Résumé</title>
+<link rel="icon" type="image/png" href="images/favicon.png" sizes="64x64">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Header markup is duplicated verbatim on every page (no build step or
+     JS include, so the site stays dependency-free and works over file://).
+     Keep all 6 pages' header block in sync when editing. -->
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="Jeremy King's resume — Home">
+    <img class="brand__headshot" src="images/header-headshot.jpg" alt="" width="32" height="32" decoding="async">
+    <span class="brand__name">Jeremy King's resume</span>
+  </a>
+  <div class="theme-switcher">
+    <span id="theme-icon" class="theme-switcher__icon" aria-hidden="true"></span>
+    <select id="theme-select" aria-label="Theme">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+      <option value="auto">Auto</option>
+    </select>
+  </div>
+</header>
+
+<main class="home">
+  <img class="home__headshot" src="images/home-headshot.jpg" alt="Portrait of Jeremy L King" width="220" height="220" decoding="async" fetchpriority="high">
+  <h1 class="home__name">Jeremy L. King</h1>
+  <p class="home__contact">
+    <a href="tel:+13039066438">(303) 906-6438</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="mailto:jlking2011@gmail.com">JLKING2011@GMAIL.COM</a>
+    <span aria-hidden="true">&middot;</span>
+    <span>Denver, CO</span>
+    <span aria-hidden="true">&middot;</span>
+    <a href="https://www.linkedin.com/in/jeremy-king-a2b45b86" target="_blank" rel="noopener">LinkedIn</a>
+  </p>
+
+  <nav class="home__grid" aria-label="Résumé sections">
+    <a class="nav-button" href="profile.html">&#10022; About Me</a>
+    <a class="nav-button" href="experience.html">Work Experience</a>
+    <a class="nav-button" href="achievements.html">Work Achievements</a>
+    <a class="nav-button" href="skills.html">My Skills</a>
+    <a class="nav-button" href="education.html">Education</a>
+  </nav>
+</main>
+
+<footer class="site-footer">
+  Made by Jeremy King with assistance from AI, 2026 (All written content authored by a human &#9997;&#65039;)
+</footer>
+
+<script src="js/theme.js" defer></script>
+</body>
+</html>

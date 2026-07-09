@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Sets the theme before first paint to avoid a flash of the wrong theme.
+     Intentionally inline (must run before CSS/paint, so it cannot be an
+     external deferred script) and duplicated byte-for-byte on every page —
+     keep all 6 copies identical if you ever touch this. -->
+<script>
+  (function () {
+    var pref = localStorage.getItem('theme-preference') || 'auto';
+    var theme = pref === 'auto'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : pref;
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Experience — Jeremy L King</title>
+<link rel="icon" type="image/png" href="images/favicon.png" sizes="64x64">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Header markup is duplicated verbatim on every page (no build step or
+     JS include, so the site stays dependency-free and works over file://).
+     Keep all 6 pages' header block in sync when editing. -->
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="Jeremy King's resume — Home">
+    <img class="brand__headshot" src="images/header-headshot.jpg" alt="" width="32" height="32" decoding="async">
+    <span class="brand__name">Jeremy King's resume</span>
+  </a>
+  <div class="theme-switcher">
+    <span id="theme-icon" class="theme-switcher__icon" aria-hidden="true"></span>
+    <select id="theme-select" aria-label="Theme">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+      <option value="auto">Auto</option>
+    </select>
+  </div>
+</header>
+
+<main class="page">
+  <h1 class="page__title">Work Experience</h1>
+  <div class="page__content">
+    <article class="entry">
+      <div class="entry__header">
+        <img class="entry__logo" src="images/logo-avionte.jpg" alt="Avionté logo" width="120" height="120" loading="lazy" decoding="async">
+        <div>
+          <h2 class="entry__title"><a href="https://www.avionte.com/" target="_blank" rel="noopener">Avionté</a> <span class="entry__title-meta">&middot; Sep 2021 – Present &middot; Remote</span></h2>
+          <p class="entry__role">Senior Quality Assurance Team Lead</p>
+        </div>
+      </div>
+      <ul>
+        <li>Performed manual QA across Android, iOS, web, and API products supporting enterprise staffing solutions</li>
+        <li>Designed and maintained Playwright automation frameworks that enabled continuous regression testing across multiple products</li>
+        <li>Using AI agents (including Claude, Copilot) to accelerate test development, debugging, and documentation</li>
+        <li>Managing, training, and coaching QA analysts</li>
+        <li>Led QA efforts for major product launches, strategic transformations, and compliance initiatives (SOC 2, ISO 27001, GDPR)</li>
+      </ul>
+    </article>
+
+    <article class="entry">
+      <div class="entry__header">
+        <img class="entry__logo" src="images/logo-workn.png" alt="WorkN logo" width="120" height="120" loading="lazy" decoding="async">
+        <div>
+          <h2 class="entry__title"><a href="https://workn.com/" target="_blank" rel="noopener">WorkN</a> <span class="entry__title-meta">(acquired by Avionté) &middot; Jan 2021 – Sep 2021 &middot; Remote</span></h2>
+          <p class="entry__role">Quality Assurance Team Lead</p>
+        </div>
+      </div>
+      <ul>
+        <li>Manual QA for over 100 native iOS and Android apps, a robust Web app, and the backend REST APIs</li>
+        <li>Creating Agile QA processes from scratch for a company with no existing QA team</li>
+        <li>Remotely hiring, managing, and leading a small QA team</li>
+        <li>Participating in dev team sprint planning and grooming</li>
+      </ul>
+    </article>
+
+    <article class="entry">
+      <div class="entry__header">
+        <img class="entry__logo" src="images/logo-textus.png" alt="TextUs logo" width="120" height="120" loading="lazy" decoding="async">
+        <div>
+          <h2 class="entry__title"><a href="https://textus.com/" target="_blank" rel="noopener">TextUs</a> <span class="entry__title-meta">&middot; May 2018 – Jan 2021 &middot; Boulder, CO</span></h2>
+          <p class="entry__role">Lead Customer Experience Specialist</p>
+        </div>
+      </div>
+      <ul>
+        <li>Tier 2 user support, handling up to 50 customer inquiries per day via chat, email, and phone</li>
+        <li>Implementation, overseeing SMS enablement and porting of phone numbers</li>
+        <li>Troubleshooting integrations and custom API solutions</li>
+        <li>QA testing, recreating and reporting bugs</li>
+        <li>Creating and updating knowledge base articles</li>
+      </ul>
+    </article>
+
+    <article class="entry">
+      <div class="entry__header">
+        <img class="entry__logo" src="images/logo-campminder.png" alt="CampMinder logo" width="120" height="120" loading="lazy" decoding="async">
+        <div>
+          <h2 class="entry__title"><a href="https://campminder.com/" target="_blank" rel="noopener">CampMinder</a> <span class="entry__title-meta">&middot; Summers 2014 – 2017 &middot; Boulder, CO</span></h2>
+          <p class="entry__role">Seasonal Customer Support</p>
+        </div>
+      </div>
+      <ul>
+        <li>User support for one of the most widely used applications in the summer camp industry</li>
+        <li>Answering customer help tickets and phone calls, with many inquiries coming from individuals with low digital literacy</li>
+      </ul>
+    </article>
+
+    <article class="entry">
+      <div class="entry__header">
+        <img class="entry__logo" src="images/logo-kingsoopers.png" alt="King Soopers logo" width="120" height="73" loading="lazy" decoding="async">
+        <div>
+          <h2 class="entry__title">King Soopers Pharmacy <span class="entry__title-meta">&middot; Jul 2015 – May 2018 &middot; Boulder, CO</span></h2>
+          <p class="entry__role">Certified Pharmacy Technician (CPhT)</p>
+        </div>
+      </div>
+      <ul>
+        <li>Trained to handle PHI under HIPAA guidelines</li>
+        <li>Adjudication of insurance claims</li>
+        <li>Handling high volumes of difficult customer service interactions</li>
+      </ul>
+    </article>
+
+    <p class="entry-note">&amp; more...</p>
+  </div>
+  <a class="back-link" href="index.html">&larr; Back to home</a>
+</main>
+
+<footer class="site-footer">
+  Made by Jeremy King with assistance from AI, 2026 (All written content authored by a human &#9997;&#65039;)
+</footer>
+
+<script src="js/theme.js" defer></script>
+</body>
+</html>
