@@ -1,47 +1,98 @@
-/* ---------- Theme variables ---------- */
+/* ---------- Theme variables ----------
+
+   Colour values here are not eyeballed. Because the page backdrop is a
+   viewport-fixed gradient (see "Layered background"), every scroll position
+   exposes the *whole* gradient range to every piece of text, so each
+   foreground was verified against both gradient extremes AND against the
+   translucent header pill composited over both extremes. Worst cases:
+   light --text-muted 4.80:1, dark --text-muted 4.66:1 (WCAG 2.2 AA needs
+   4.5:1 body text, 3:1 UI). If you change a --grad-* stop, a --glow-* alpha,
+   or --text-muted, re-verify before committing.                             */
+
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  --accent: #06055c;
-  --accent-alt: #c9a227;
-
   --radius: 12px;
+  --radius-lg: 16px;
   --transition: 180ms ease;
   --max-width: 860px;
+  --max-width-home: 1080px;
+
+  /* Header geometry. --header-h is only ever used for scroll-padding-top, so
+     being slightly off costs a little whitespace, never occluded content. */
+  --header-inset: 0.75rem;
+  --header-h: 4.5rem;
+
+  /* Minimum interactive target (WCAG 2.2 2.5.8 needs 24px; 44px is the
+     comfortable touch size). */
+  --tap: 2.75rem;
+
+  --logo-bg: #ffffff;
 }
 
 :root,
 [data-theme='light'] {
   --bg: #faf9f6;
+  --bg-canvas: #e6e5de;
   --bg-elevated: #ffffff;
   --text: #1c1c1c;
-  --text-muted: #5a5a5a;
+  --text-muted: #454545;
   --border: #e2e0da;
+  --border-strong: #807d76;
+
+  --accent: #06055c;
+  --accent-contrast: #ffffff;
+  --focus-ring: #06055c;
+
+  --grad-top: #d6d4c8;
+  --grad-1: #d8d6cb;
+  --grad-2: #deddd3;
+  --grad-3: #e6e5de;
+  --grad-4: #efeee9;
+  --grad-5: #f7f6f4;
+  --grad-6: #fdfdfc;
+  --grad-bot: #ffffff;
+  --glow-top: rgba(6, 5, 92, 0.13);
+  --glow-bot: rgba(201, 162, 39, 0.09);
+
   --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.15);
-  --button-bg: #ffffff;
-  --button-hover-bg: var(--accent);
-  --button-hover-text: #ffffff;
+
   --header-bg: rgba(255, 255, 255, 0.92);
-  --letter-bg: #f3ead4;
-  --letter-border: #d9c7a0;
+  --header-bg-glass: rgba(255, 255, 255, 0.72);
+  --header-bg-opaque: #ffffff;
 }
 
 [data-theme='dark'] {
   --bg: #14181a;
+  --bg-canvas: #1b1e23;
   --bg-elevated: #1d2226;
   --text: #ecebe8;
-  --text-muted: #a7a7a2;
+  --text-muted: #b8b8b2;
   --border: #2b3134;
+  --border-strong: #7c848a;
+
+  --accent: #dcb43f;
+  --accent-contrast: #14181a;
+  --focus-ring: #e0bb4a;
+
+  --grad-top: #08090b;
+  --grad-1: #0b0c0e;
+  --grad-2: #121417;
+  --grad-3: #1b1e23;
+  --grad-4: #252a2f;
+  --grad-5: #2e343b;
+  --grad-6: #353c44;
+  --grad-bot: #383f47;
+  --glow-top: rgba(6, 5, 92, 0.26);
+  --glow-bot: rgba(201, 162, 39, 0.09);
+
   --shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
   --shadow-hover: 0 12px 26px rgba(0, 0, 0, 0.55);
-  --button-bg: #1d2226;
-  --button-hover-bg: var(--accent-alt);
-  --button-hover-text: #14181a;
+
   --header-bg: rgba(36, 41, 45, 0.92);
-  --accent: var(--accent-alt);
-  --letter-bg: #2b2a28;
-  --letter-border: #46443e;
+  --header-bg-glass: rgba(36, 41, 45, 0.72);
+  --header-bg-opaque: #24292d;
 }
 
 /* ---------- Reset / base ---------- */
@@ -50,28 +101,100 @@
 }
 
 html {
+  /* Fallback for the no-JS / no-attribute case; the per-theme rules below
+     win once the inline <head> script has set data-theme. Declaring it per
+     theme matters because a static "light dark" lets the UA paint the
+     native <select> popup in the wrong scheme when a theme is forced. */
   color-scheme: light dark;
-  /* Cross-document view transitions can briefly reveal the <html> root's
-     own background (not just <body>'s) while the old/new snapshots are
-     compositing. Without this it defaults to white and flashes behind the
-     header on every navigation. */
-  background: var(--bg);
+
+  /* Propagated to the canvas, so this also fills the area exposed by iOS
+     rubber-band overscroll. Deliberately the *midpoint* of the gradient
+     ramp, so a transient seam is minimal at either end. It also remains the
+     flash guard it always was: cross-document view transitions can briefly
+     reveal the root's own background, which would otherwise default to
+     white and flash behind the header on every navigation. */
+  background-color: var(--bg-canvas);
+
+  /* Keeps the sticky header from covering a heading landed on via #hash.
+     Resolves against whichever --header-h the matching breakpoint set, since
+     custom properties are substituted at computed-value time. */
+  scroll-padding-top: calc(var(--header-h) + var(--header-inset) + 1rem);
 }
+
+[data-theme='light'] { color-scheme: light; }
+[data-theme='dark'] { color-scheme: dark; }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  /* Plain block flow on purpose. A column flex/grid body would let the footer
+     be pinned to the viewport bottom on short pages, but it also stops the
+     header and main from shrinking below their min-content width, which
+     reintroduced horizontal scrolling at 200% text zoom (measured: 9 failures
+     across the width x zoom matrix, and `min-width: 0` on the children did not
+     fix it). Reflow (WCAG 1.4.10) beats footer placement. */
+  /* Must stay transparent. The backdrop below is a negative-z-index child of
+     <html>, which paints above <html>'s background but *below* <body>'s, so
+     any background here would hide the gradient completely. */
+  background: transparent;
   color: var(--text);
   font-family: var(--font-sans);
   line-height: 1.6;
-  transition: background var(--transition), color var(--transition);
+  /* Only engages when a word cannot fit at all (long emails, company names
+     under heavy text zoom); normal wrapping is unaffected. */
+  overflow-wrap: break-word;
+  transition: color var(--transition);
+}
+
+/* ---------- Layered background ----------
+
+   A viewport-fixed pseudo-element rather than a background on <body>:
+   - background-attachment: fixed is unreliable (iOS Safari sizes it to the
+     document) and silently degrades to `scroll` inside any backdrop-filter
+     containing block, which the header introduces.
+   - A document-length gradient resolves to flat within the first screenful
+     on a long page like experience.html, so "dark top, light bottom" would
+     only exist above the fold.
+
+   Bled 15vh past both viewport edges with the ramp clamped flat in the bleed
+   zones, so overscroll cannot reveal the flat canvas colour as a seam. Stop
+   positions are percentages of the element (not vh) so they stay consistent
+   with each other regardless of how the UA resolves viewport units.
+
+   The intermediate stops are a smoothstep -- t*t*(3-2t) -- interpolation of
+   the two endpoints. That easing is what prevents visible Mach banding; a
+   noise/dither overlay would also work but measurably costs 0.2-0.3 off
+   every contrast ratio, which this palette cannot spare.                    */
+html::before {
+  content: '';
+  position: fixed;
+  inset: -15vh 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(115% 42% at 50% 8%, var(--glow-top) 0%, transparent 70%),
+    radial-gradient(85% 38% at 82% 92%, var(--glow-bot) 0%, transparent 70%),
+    linear-gradient(
+      180deg,
+      var(--grad-top) 0,
+      var(--grad-top) 11.5%,
+      var(--grad-1) 22.5%,
+      var(--grad-2) 33.5%,
+      var(--grad-3) 44.5%,
+      var(--grad-4) 55.5%,
+      var(--grad-5) 66.5%,
+      var(--grad-6) 77.5%,
+      var(--grad-bot) 88.5%,
+      var(--grad-bot) 100%
+    );
 }
 
 h1, h2, h3, h4 {
   font-family: var(--font-sans);
   line-height: 1.2;
   margin: 0 0 0.6em;
+  /* The sticky header would otherwise cover a heading landed on via #hash. */
+  scroll-margin-top: calc(var(--header-h) + var(--header-inset) + 1rem);
 }
 
 a {
@@ -83,67 +206,183 @@ img {
   display: block;
 }
 
+/* ---------- Accessibility utilities ---------- */
+
+/* Kept in the accessibility tree (unlike display:none) while off-screen. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--header-inset);
+  top: var(--header-inset);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0.6rem 1rem;
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 2px solid var(--focus-ring);
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* The default UA ring is easy to lose against a gradient; --focus-ring is
+   verified to at least 3:1 over every point of the backdrop in both themes. */
+:where(a, button, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* The skip link moves focus here programmatically, so a ring would be noise;
+   tabindex="-1" is required because Safari will not focus a non-focusable
+   fragment target, which would leave focus stranded in the header. */
+main:focus {
+  outline: none;
+}
+
 /* ---------- Header ---------- */
+
+/* Persistent via sticky, not fixed: sticky's containing block is <body>,
+   which spans the document, so it already never leaves the viewport -- and
+   its height is measured by layout rather than hard-coded, which matters
+   because the pill grows to two rows on narrow screens and grows again under
+   text zoom. A fixed header needs a matching offset on <main> and starts
+   eating content the moment that number is wrong. */
 .site-header {
   position: sticky;
-  top: 0.75rem;
+  top: var(--header-inset);
   z-index: 10;
   display: flex;
+  /* A no-op until brand + nav + switcher genuinely cannot share a line (only
+     happens under heavy text zoom). Wrapping beats overflowing; sticky
+     measures the taller pill by itself. */
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0.75rem clamp(0.75rem, 4vw, 2rem) 0;
-  padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
+  gap: 0.75rem clamp(0.75rem, 2.5vw, 1.75rem);
+  margin: var(--header-inset) clamp(0.75rem, 4vw, 2rem) 0;
+  padding: 0.7rem clamp(0.9rem, 3vw, 2rem);
   background: var(--header-bg);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
 }
 
+/* Deliberately no transition on `background` here -- Safari flickers the blur
+   mid-transition when backdrop-filter is active on the same element. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header {
+    background: var(--header-bg-glass);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+  }
+}
+
+ /* Static site title, not a link -- the Home nav item handles going home.
+    min-width:0 is load-bearing: it lets the title wrap rather than force the
+    header wider than a 320px viewport. */
 .brand {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
+  min-width: 0;
   color: var(--text);
-  border-radius: var(--radius);
-  padding: 0.35rem 0.6rem;
-  margin: -0.35rem -0.6rem;
-  transition: background var(--transition), color var(--transition), transform var(--transition);
-}
-
-.brand:hover,
-.brand:focus-visible {
-  transform: translateY(-1px);
-}
-
-.brand:hover .brand__name,
-.brand:focus-visible .brand__name {
-  text-decoration: underline;
-}
-
-.brand__headshot {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
 }
 
 .brand__name {
-  font-family: var(--font-sans);
   font-weight: 700;
   font-size: clamp(0.95rem, 2.5vw, 1.2rem);
   line-height: 1;
   white-space: nowrap;
 }
 
+.site-nav {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
+}
+
+.site-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.site-nav__list a {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  /* One source of truth for the inline padding: the current-page rule below
+     insets its bar by exactly this much, so the bar always spans the label and
+     nothing more, at every breakpoint. */
+  --nav-pad: 0.7rem;
+  padding: 0 var(--nav-pad);
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+  transition: color var(--transition);
+}
+
+.site-nav__list a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Current page is signalled by weight and a rule as well as colour, so it
+   survives WCAG 1.4.1 (Use of Colour). */
+.site-nav__list a[aria-current='page'] {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* A pseudo-element rather than an inset box-shadow: the link box is nearly as
+   tall as the header pill, so a shadow on its bottom edge lands on the pill's
+   rounded border and reads as a rendering artifact. This tucks the rule under
+   the text instead. */
+.site-nav__list a[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  inset-inline: var(--nav-pad);
+  bottom: 0.45rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
 .theme-switcher {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 0.4rem;
-  flex-shrink: 0;
 }
 
 .theme-switcher__icon {
@@ -160,9 +399,13 @@ img {
 .theme-switcher select {
   font-family: var(--font-sans);
   font-size: 0.9rem;
+  min-height: 2rem;
+  min-width: 5.5rem;
   color: var(--text);
   background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  /* A form control's boundary is what identifies it, so this one needs the
+     3:1 border (WCAG 1.4.11) that decorative card edges do not. */
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
   padding: 0.35rem 0.5rem;
   cursor: pointer;
@@ -174,11 +417,36 @@ img {
   border-color: var(--accent);
 }
 
-/* ---------- Home page ---------- */
+/* ---------- Home page ----------
+
+   DOM order is identity -> about -> section nav, which is simultaneously the
+   correct reading order and the intended visual order. Do not introduce
+   `order`, `row-reverse`, or `grid-auto-flow: dense` here: any of them would
+   split visual order from focus order (WCAG 1.3.2 / 2.4.3).
+
+   The two columns collapse through flex-wrap rather than a media query, so
+   they reflow on their own content width -- which stays correct under text
+   zoom, where a viewport-px breakpoint would not (WCAG 1.4.4 / 1.4.10).     */
 .home {
-  max-width: var(--max-width);
+  max-width: var(--max-width-home);
   margin: 0 auto;
-  padding: clamp(2rem, 6vw, 4.5rem) 1.5rem 4rem;
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem 4rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(1.75rem, 5vw, 3.5rem);
+}
+
+.home__identity {
+  flex: 1 1 17rem;
+  /* Flex items default to min-width:auto, which refuses to shrink below
+     min-content -- so without this a long unbreakable token (the email
+     address) can push the column past the viewport under text zoom. */
+  min-width: 0;
+  max-width: 22rem;
+  /* Portrait, name, contact rows and social icons are all centred within this
+     column. The About prose beside it stays left-aligned -- centred body copy
+     hurts readability, but these are all short single lines. */
   text-align: center;
 }
 
@@ -187,28 +455,44 @@ img {
   height: clamp(160px, 30vw, 220px);
   border-radius: 50%;
   object-fit: cover;
-  margin: 0 auto 1.25rem;
+  margin: 0 auto 1.5rem;
   box-shadow: var(--shadow);
   border: 3px solid var(--bg-elevated);
 }
 
 .home__name {
   font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin-bottom: 0.35em;
 }
 
 .home__contact {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.3rem 0.9rem;
-  color: var(--text-muted);
+  display: grid;
+  gap: 0.55rem;
   margin: 0;
+  padding: 0;
+  list-style: none;
   font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.home__contact li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.home__contact svg {
+  flex-shrink: 0;
+  color: var(--accent);
 }
 
 .home__contact a {
   color: var(--text-muted);
   text-decoration: none;
+  /* The email address is a single unbreakable token; let it break rather than
+     force the column wider than the viewport. */
+  overflow-wrap: anywhere;
 }
 
 .home__contact a:hover,
@@ -217,36 +501,61 @@ img {
   text-decoration: underline;
 }
 
-.home__grid {
+.home__social {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 340px;
-  margin: 2.75rem auto 0;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.nav-button {
-  display: flex;
+.home__social a {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 1.1rem 1.5rem;
-  background: var(--button-bg);
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text);
+  transition: background var(--transition), color var(--transition),
+    border-color var(--transition), transform var(--transition);
+}
+
+.home__social a:hover,
+.home__social a:focus-visible {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+  transform: translateY(-2px);
+}
+
+.home__about {
+  flex: 3 1 24rem;
+  min-width: 0;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  color: var(--text);
-  font-weight: 600;
-  text-decoration: none;
-  transition: background var(--transition), color var(--transition),
-    transform var(--transition), box-shadow var(--transition);
 }
 
-.nav-button:hover,
-.nav-button:focus-visible {
-  background: var(--button-hover-bg);
-  color: var(--button-hover-text);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
+.home__about h2 {
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+}
+
+.home__about p {
+  max-width: 60ch;
+}
+
+.home__about p + p {
+  margin-top: 1em;
+}
+
+.closing-line {
+  font-weight: 700;
 }
 
 /* ---------- Section pages ---------- */
@@ -265,30 +574,6 @@ img {
   max-width: 640px;
 }
 
-/* Gives the whole page the feel of a single handwritten letter tucked
-   inside a paper (light) / grained (dark) card, rather than plain text. */
-.letter {
-  max-width: 680px;
-  background-color: var(--letter-bg);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-  border: 1px solid var(--letter-border);
-  border-radius: var(--radius);
-  padding: 1.75rem 2rem;
-}
-
-.letter p {
-  text-align: justify;
-  hyphens: auto;
-}
-
-.letter .closing-line {
-  text-align: center;
-}
-
-.closing-line {
-  font-weight: 700;
-}
-
 .page__content p + p {
   margin-top: 1em;
 }
@@ -302,15 +587,22 @@ img {
 
 .page__content li {
   position: relative;
-  padding-left: 1.1rem;
+  padding-left: 1.15rem;
   margin-bottom: 0.5rem;
 }
 
+/* Small accent dot. Absolutely positioned against the first line's optical
+   centre rather than baseline-aligned, so it stays put when an item wraps to
+   several lines. */
 .page__content li::before {
-  content: '\2014';
+  content: '';
   position: absolute;
-  left: 0;
-  color: var(--accent);
+  left: 0.1rem;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .entry {
@@ -338,7 +630,8 @@ img {
   width: auto;
   max-width: 84px;
   object-fit: contain;
-  background: #ffffff;
+  /* Company marks assume a white field in both themes. */
+  background: var(--logo-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 4px;
@@ -372,7 +665,7 @@ img {
   margin: 0.2rem 0 0;
 }
 
-/* Without this, the generic ".page__content p + p" rule below wins on
+/* Without this, the generic ".page__content p + p" rule above wins on
    specificity (two type selectors) and overrides .entry__role's own
    margin-top, making stacked role lines (e.g. degree + minor) drift out
    of alignment with the line above them. */
@@ -414,18 +707,6 @@ img {
   content: none;
 }
 
-.back-link {
-  display: inline-block;
-  margin-top: 2.5rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.back-link:hover,
-.back-link:focus-visible {
-  text-decoration: underline;
-}
-
 /* ---------- Footer ---------- */
 .site-footer {
   text-align: center;
@@ -434,3 +715,213 @@ img {
   padding: 2rem 1.5rem 2.5rem;
 }
 
+/* ---------- Responsive ---------- */
+
+/* Five nav items plus the brand and the switcher no longer share one line
+   below ~900px. Rather than let flex-wrap produce a ragged result (its row
+   heights bounced between 68px and 140px across this range), make the two-row
+   layout deliberate: brand + switcher on row 1, nav on row 2.
+
+   Laid out with grid-template-areas rather than flex `order` on purpose:
+   `order` would put the nav last visually while it stays second in the DOM,
+   splitting visual order from focus order (WCAG 2.4.3). Grid areas reposition
+   boxes without touching the flow sequence. The floating pill is kept here --
+   only below 600px does it become a full-bleed bar.
+
+   960px, not the measured 949px threshold: the measurement is Chromium with
+   Inter loaded, and a different engine or a fallback font shifts it. The 11px
+   of margin costs one slightly-early wrap and buys immunity to that. */
+@media (max-width: 60em) {
+  :root {
+    --header-h: 8.5rem; /* measured: 113-120px across this range */
+  }
+
+  .site-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'brand . theme'
+      'nav nav nav';
+  }
+
+  .brand { grid-area: brand; }
+  .theme-switcher { grid-area: theme; }
+
+  .site-nav {
+    grid-area: nav;
+    padding-top: 0.4rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .site-nav__list {
+    width: 100%;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    gap: 0.15rem 0.25rem;
+  }
+
+  .site-nav__list a {
+    --nav-pad: 0.5rem;
+  }
+}
+
+/* Below 600px the pill becomes a full-bleed bar. */
+@media (max-width: 37.5em) {
+  :root {
+    --header-inset: 0rem;
+    --header-h: 8rem; /* measured: 124px */
+  }
+
+  .site-header {
+    margin-inline: 0;
+    padding: 0.55rem 0.75rem;
+    border-inline: 0;
+    border-top: 0;
+    border-radius: 0;
+  }
+
+  /* Row 1 has to fit brand + switcher inside the viewport. If it doesn't, the
+     grid overflows horizontally and -- worse -- hands the nav row a phantom
+     width, so the nav then never wraps either. Letting the brand title break
+     across lines and trimming the select is what keeps both rows honest at
+     320px. Nothing is hidden or abbreviated. */
+  .brand__name {
+    white-space: normal;
+    font-size: 0.9rem;
+    line-height: 1.15;
+  }
+
+  .theme-switcher select {
+    min-width: 4.75rem;
+  }
+
+  .site-nav__list {
+    font-size: 0.8rem;
+  }
+
+  .site-nav__list a {
+    --nav-pad: 0.35rem;
+  }
+
+  .skip-link {
+    left: 0.5rem;
+    top: 0.5rem;
+  }
+}
+
+/* Only breakpoint the home page needs: once flex-wrap has stacked the columns,
+   drop the identity column's width cap so its centred contents sit in the
+   middle of the page rather than in the middle of a 22rem box on the left.
+   (The centring itself is unconditional -- see .home__identity.) */
+@media (max-width: 43.75em) {
+  .home__identity {
+    max-width: none;
+  }
+}
+
+/* Narrowest phones: the five labels no longer fit on one line. Left to
+   flex-wrap they break 4 + 1, stranding "Education" on a row of its own, so
+   switch to an explicit 3 + 2 grid. Still nothing hidden or abbreviated. */
+@media (max-width: 24em) {
+  :root {
+    --header-h: 10.5rem; /* measured: 161px once the nav wraps to 3 + 2 */
+  }
+
+  /* auto-fit + min(), not repeat(3, 1fr): `em` in a media query always
+     resolves against the initial 16px, so this block still applies under text
+     zoom -- and three fixed tracks then cannot shrink, overflowing the
+     viewport. This yields 3 columns (the intended 3 + 2) at normal size and
+     degrades to fewer, then one, as the text grows. */
+  .site-nav__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(5.5rem, 100%), 1fr));
+    gap: 0.15rem 0.25rem;
+  }
+
+  /* The 1fr track is wider than the label, so shrink each item to its content
+     and centre it in the track. Without this the current-page bar stretches
+     across the whole cell instead of underlining the word. The links keep
+     min-width: 2.75rem, so the 44px target is unaffected. */
+  .site-nav__list li {
+    justify-self: center;
+  }
+}
+
+/* ---------- User preferences ---------- */
+
+/* Not enabled unconditionally: smooth scrolling is exactly what
+   prefers-reduced-motion asks you to skip. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Zeroing the duration still leaves an instant jump, so the lifts have to
+     be removed outright. */
+  .home__social a:hover,
+  .home__social a:focus-visible {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-header {
+    background: var(--header-bg-opaque);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (forced-colors: active) {
+  html::before {
+    display: none;
+  }
+
+  :where(a, button, select, summary, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+
+  /* System colours ignore our accent, so fall back to an underline the forced
+     palette will actually render. */
+  .site-nav__list a[aria-current='page'] {
+    text-decoration: underline;
+  }
+
+  .site-nav__list a[aria-current='page']::after {
+    display: none;
+  }
+
+  /* A dot drawn with background-color disappears once the UA forces
+     backgrounds, so swap in a real bullet glyph (text keeps its colour). */
+  .page__content li::before {
+    content: '\2022';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: auto;
+    height: auto;
+    background: none;
+  }
+}
+
+@media print {
+  html::before {
+    display: none;
+  }
+
+  .site-header,
+  .skip-link {
+    display: none;
+  }
+}

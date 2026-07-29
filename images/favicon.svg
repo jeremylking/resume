@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- Bootstrap Icons "file-earmark-text" (MIT), the same icon set the theme
+       switcher and the contact/social marks already use.
+
+       Colours mirror the site's accent flip so the mark stays legible on both
+       a light and a dark browser tab strip. Chrome and Firefox honour this
+       media query inside an SVG favicon; Safari ignores SVG favicons entirely
+       and falls back to the PNG referenced alongside this file. -->
+  <style>
+    path { fill: #06055c; }
+    @media (prefers-color-scheme: dark) {
+      path { fill: #dcb43f; }
+    }
+  </style>
+  <!-- The glyph is 12x16 within a 16x16 grid, i.e. flush to the top and bottom
+       edges. Scaling about the centre gives it breathing room so it does not
+       touch the edges of the favicon canvas. -->
+  <g transform="translate(8 8) scale(0.86) translate(-8 -8)">
+    <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+    <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+  </g>
+</svg>

@@ -5,7 +5,7 @@
 <!-- Sets the theme before first paint to avoid a flash of the wrong theme.
      Intentionally inline (must run before CSS/paint, so it cannot be an
      external deferred script) and duplicated byte-for-byte on every page —
-     keep all 6 copies identical if you ever touch this. -->
+     keep all 5 copies identical if you ever touch this. -->
 <script>
   (function () {
     var pref = localStorage.getItem('theme-preference') || 'auto';
@@ -17,7 +17,8 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Education — Jeremy L King</title>
-<link rel="icon" type="image/png" href="images/favicon.png" sizes="64x64">
+<link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="images/favicon-32.png" sizes="32x32">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,14 +26,28 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
 <!-- Header markup is duplicated verbatim on every page (no build step or
      JS include, so the site stays dependency-free and works over file://).
-     Keep all 6 pages' header block in sync when editing. -->
+     Keep all 5 pages' header block in sync when editing.
+
+     The ONLY difference permitted between copies is which single nav link is
+     flagged as the current page -- exactly one per page. (The attribute is
+     deliberately not named in this comment so that grepping for it returns
+     only real occurrences.) The site title is static text, not a link; the
+     Home item is what navigates home. -->
 <header class="site-header">
-  <a class="brand" href="index.html" aria-label="Jeremy King's resume — Home">
-    <img class="brand__headshot" src="images/header-headshot.jpg" alt="" width="32" height="32" decoding="async">
-    <span class="brand__name">Jeremy King's resume</span>
-  </a>
+  <span class="brand"><span class="brand__name">Jeremy King's resume</span></span>
+  <nav class="site-nav" aria-label="Résumé sections">
+    <ul class="site-nav__list">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="experience.html">Experience</a></li>
+      <li><a href="achievements.html">Achievements</a></li>
+      <li><a href="skills.html">Skills</a></li>
+      <li><a href="education.html" aria-current="page">Education</a></li>
+    </ul>
+  </nav>
   <div class="theme-switcher">
     <span id="theme-icon" class="theme-switcher__icon" aria-hidden="true"></span>
     <select id="theme-select" aria-label="Theme">
@@ -43,7 +58,7 @@
   </div>
 </header>
 
-<main class="page">
+<main class="page" id="main" tabindex="-1">
   <h1 class="page__title">Education</h1>
   <div class="page__content">
     <article class="entry">
@@ -57,7 +72,6 @@
       </div>
     </article>
   </div>
-  <a class="back-link" href="index.html">&larr; Back to home</a>
 </main>
 
 <footer class="site-footer">
